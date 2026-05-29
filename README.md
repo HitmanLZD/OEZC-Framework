@@ -20,4 +20,11 @@ On one end, the UI is collapsing inward. Tools, apps, and interfaces are merging
 * Why the ultimate AI Agent and the ultimate Blockchain are each other's greatest prerequisites.
 
 ---
+### 💬 Let's Discuss
+If you have any insights, fundamental objections, or want to collaborate on solving the [Open Questions](./paper.html#s4), feel free to reach out via email:
+
+📬 **[firebloom96@gmail.com](mailto:firebloom96@gmail.com)**
+
+---
+*A growing idea · 2026*
 *A growing idea · 2026*
