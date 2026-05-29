@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Entry · Zero Centers — 一个入口，零个中心</title>
+<style>
+  :root {
+    --bg:#060610; --bg2:#0a0a1a;
+    --surface:rgba(255,255,255,0.03); --surface2:rgba(255,255,255,0.05);
+    --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.04);
+    --text:#f0f0f5; --text2:#c8c8d4; --dim:#8888a0; --dim2:#606078;
+    --amber:#f0a040; --amber-glow:rgba(240,160,64,0.2); --amber-bg:rgba(240,160,64,0.06);
+    --teal:#40e0c0; --teal-glow:rgba(64,224,192,0.18); --teal-bg:rgba(64,224,192,0.05);
+    --purple:#b48cf0; --purple-glow:rgba(180,140,240,0.14); --purple-bg:rgba(180,140,240,0.05);
+    --pink:#f06080; --pink-glow:rgba(240,96,128,0.12);
+    --radius:20px; --radius-sm:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html.lenis{height:auto;}
+  .lenis.lenis-smooth{scroll-behavior:auto;}
+  .lenis.lenis-stopped{overflow:hidden;}
+
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"PingFang SC","Noto Sans SC","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    line-height:1.7; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  html.lenis::-webkit-scrollbar{width:4px;}
+  html.lenis::-webkit-scrollbar-track{background:transparent;}
+  html.lenis::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08); border-radius:2px;}
+
+  /* glow orbs */
+  .glow-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .glow-orb{
+    position:absolute;border-radius:50%;filter:blur(140px);opacity:0.28;
+    transition:transform 1.2s cubic-bezier(0.16,1,0.3,1);
+  }
+  .go-1{width:800px;height:800px;background:radial-gradient(circle,rgba(240,160,64,0.5),transparent);top:-20%;left:-12%;}
+  .go-2{width:650px;height:650px;background:radial-gradient(circle,rgba(64,224,192,0.4),transparent);bottom:-15%;right:-10%;}
+  .go-3{width:500px;height:500px;background:radial-gradient(circle,rgba(180,140,240,0.35),transparent);top:50%;left:40%;}
+  .go-4{width:400px;height:400px;background:radial-gradient(circle,rgba(240,96,128,0.25),transparent);top:75%;left:55%;}
+
+  /* dot grid */
+  .dot-grid{
+    position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.08;
+    background-image:radial-gradient(circle,rgba(255,255,255,0.25) 1px,transparent 1px);
+    background-size:32px 32px;
+  }
+
+  /* nav */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 2rem;transition:all 0.4s;}
+  .nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px;}
+  .nav .logo{font-size:0.85rem;font-weight:700;letter-spacing:-0.01em;color:var(--text);text-decoration:none;}
+  .nav .logo span{background:linear-gradient(135deg,var(--amber),var(--teal));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-lang{display:flex;gap:0.3rem;}
+  .nav-lang button{padding:0.35rem 0.9rem;border-radius:16px;font-size:0.75rem;font-weight:600;cursor:pointer;
+    border:none;background:rgba(255,255,255,0.04);color:var(--dim);font-family:inherit;transition:all 0.25s;}
+  .nav-lang button.active{background:var(--text);color:var(--bg);}
+
+  /* progress */
+  #progress{position:fixed;top:0;left:0;height:3px;z-index:9999;width:0;
+    background:linear-gradient(90deg,var(--amber),var(--teal),var(--purple));}
+
+  /* ====== HERO ====== */
+  .hero{position:relative;height:100vh;height:100svh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;}
+  #hero-canvas{position:absolute;inset:0;z-index:1;}
+  .hero-content{position:relative;z-index:2;max-width:1000px;padding:2rem;}
+  .hero .eyebrow{font-size:0.7rem;letter-spacing:0.5em;font-weight:600;opacity:0;
+    background:linear-gradient(135deg,var(--teal),var(--purple));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    text-transform:uppercase;margin-bottom:2rem;}
+  .hero h1{font-size:clamp(3.5rem,10vw,8.5rem);font-weight:800;letter-spacing:-0.05em;line-height:1.02;margin-bottom:1.8rem;opacity:0;}
+  .hero h1 .grad{
+    background:linear-gradient(135deg,var(--amber) 20%,var(--teal) 50%,var(--purple) 80%);
+    background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    animation:gradShift 6s ease-in-out infinite;
+  }
+  /* magnet char */
+  .hero h1 .mchar{display:inline-block;transition:transform 0.15s ease-out, color 0.15s ease-out, text-shadow 0.15s ease-out;cursor:default;}
+  .hero h1 .mchar:hover{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 0 30px rgba(255,255,255,0.6),0 0 60px rgba(240,160,64,0.4);}
+  @keyframes gradShift{0%,100%{background-position:0% 0;}50%{background-position:100% 0;}}
+  .hero .sub{font-size:clamp(1rem,2vw,1.3rem);color:var(--dim);max-width:600px;margin:0 auto;line-height:1.85;opacity:0;}
+  .hero .sub em{font-style:normal;color:var(--text2);font-weight:600;}
+  .hero .sub .hword{display:inline-block;transition:all 0.2s ease-out;cursor:default;}
+  .hero .sub .hword:hover{color:var(--text);transform:scale(1.15);text-shadow:0 0 20px rgba(255,255,255,0.3);}
+  .scroll-tag{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);z-index:2;font-size:0.7rem;letter-spacing:0.25em;color:var(--dim2);opacity:0;}
+
+  /* ====== SECTIONS ====== */
+  section{max-width:1000px;margin:0 auto;padding:8rem 2rem;position:relative;z-index:2;}
+  @media(max-width:640px){section{padding:5rem 1.5rem;}}
+
+  .sec-num{font-size:0.65rem;letter-spacing:0.5em;font-weight:700;margin-bottom:1rem;
+    background:linear-gradient(135deg,var(--amber),var(--teal));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-transform:uppercase;}
+
+  section h2{font-size:clamp(2rem,5vw,3.4rem);font-weight:700;letter-spacing:-0.04em;line-height:1.12;margin-bottom:1rem;transition:all 0.4s ease-out;}
+  section h2:hover{text-shadow:0 0 50px rgba(255,255,255,0.12),0 0 100px rgba(240,160,64,0.08);transform:translateX(6px);}
+  section .lead{color:var(--dim);font-size:1.05rem;max-width:640px;margin-bottom:3.5rem;line-height:1.8;}
+  section .lead p{transition:all 0.3s ease-out;}
+  section .lead p:hover{color:var(--text2);transform:translateX(4px);}
+
+  /* cards */
+  .cards{display:grid;gap:1.5rem;}
+  .cards.col2{grid-template-columns:1fr 1fr;}
+  .cards.col3{grid-template-columns:repeat(3,1fr);}
+  @media(max-width:768px){.cards.col2,.cards.col3{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:2.5rem 2rem;position:relative;overflow:hidden;
+    backdrop-filter:blur(8px);transition:all 0.45s cubic-bezier(0.16,1,0.3,1);
+  }
+  .card::before{content:'';position:absolute;inset:0;border-radius:inherit;
+    background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,0.03),transparent);opacity:0;transition:opacity 0.4s;}
+  .card:hover::before{opacity:1;}
+  .card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-4px);box-shadow:0 20px 60px -16px rgba(0,0,0,0.5);}
+  .card .icn{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1.4rem;transition:transform 0.4s;}
+  .card:hover .icn{transform:scale(1.08) translateY(-2px);}
+  .card.amber .icn{background:var(--amber-bg);color:var(--amber);}
+  .card.amber:hover{border-color:rgba(240,160,64,0.2);}
+  .card.amber:hover .icn{box-shadow:0 0 32px var(--amber-glow);}
+  .card.teal .icn{background:var(--teal-bg);color:var(--teal);}
+  .card.teal:hover{border-color:rgba(64,224,192,0.2);}
+  .card.teal:hover .icn{box-shadow:0 0 32px var(--teal-glow);}
+  .card.purple .icn{background:var(--purple-bg);color:var(--purple);}
+  .card.purple:hover{border-color:rgba(180,140,240,0.2);}
+  .card.purple:hover .icn{box-shadow:0 0 32px var(--purple-glow);}
+  .card h3{font-size:1.2rem;font-weight:700;margin-bottom:0.6rem;letter-spacing:-0.02em;transition:all 0.3s ease-out;}
+  .card:hover h3{text-shadow:0 0 20px rgba(255,255,255,0.1);}
+  .card p{color:var(--dim);font-size:0.9rem;line-height:1.75;transition:color 0.3s ease-out;}
+  .card:hover p{color:var(--text2);}
+  .card .tag-row{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+  .card .tag{padding:0.3rem 0.8rem;border-radius:16px;font-size:0.72rem;font-weight:600;border:1px solid var(--border);}
+  .card.amber .tag{border-color:rgba(240,160,64,0.15);color:var(--amber);background:var(--amber-bg);}
+  .card.teal .tag{border-color:rgba(64,224,192,0.15);color:var(--teal);background:var(--teal-bg);}
+
+  /* stat num */
+  .num-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-top:1.5rem;}
+  .num-item{text-align:center;padding:1rem 0.5rem;border-radius:var(--radius-sm);background:rgba(255,255,255,0.015);border:1px solid var(--border);}
+  .num-item .n{font-size:2.2rem;font-weight:800;letter-spacing:-0.03em;line-height:1;}
+  .num-item .l{font-size:0.72rem;color:var(--dim2);margin-top:0.4rem;}
+
+  /* timeline */
+  .tl-line{display:flex;gap:0;margin-top:1.2rem;position:relative;}
+  .tl-line::before{content:'';position:absolute;top:8px;left:8%;right:8%;height:1px;background:rgba(255,255,255,0.06);z-index:0;}
+  .tl-dot{flex:1;text-align:center;padding:0.3rem;position:relative;z-index:1;}
+  .tl-dot .tly{font-size:0.62rem;font-weight:700;color:var(--dim2);margin-bottom:0.5rem;position:relative;display:inline-block;}
+  .tl-dot .tlt{font-size:0.75rem;color:var(--dim);}
+
+  /* diagram */
+  .diagram-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  #diagram-canvas{display:block;width:100%;height:560px;background:rgba(6,6,16,0.5);}
+  @media(max-width:640px){#diagram-canvas{height:380px;}}
+  .diagram-legend{display:flex;justify-content:center;gap:3rem;padding:1.5rem;font-size:0.82rem;color:var(--dim);border-top:1px solid var(--border);}
+  .diagram-legend .ld{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:0.4rem;}
+  .diagram-legend .ld.am{background:var(--amber);box-shadow:0 0 10px var(--amber-glow);}
+  .diagram-legend .ld.tl{background:var(--teal);box-shadow:0 0 10px var(--teal-glow);}
+
+  /* axiom */
+  .axiom-block{text-align:center;padding:4rem 2rem;background:linear-gradient(135deg,rgba(240,160,64,0.04),rgba(64,224,192,0.04),rgba(180,140,240,0.04));
+    border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);margin:2rem 0;position:relative;overflow:hidden;}
+  .axiom-block::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:1px;
+    background:linear-gradient(90deg,transparent,var(--amber),var(--teal),transparent);}
+  .axiom-block .eq{font-size:clamp(1.4rem,4vw,2.6rem);font-weight:700;letter-spacing:-0.03em;margin-bottom:0.4rem;}
+  .axiom-block .eq .a{color:var(--amber);}.axiom-block .eq .t{color:var(--teal);}
+  .axiom-block .ratio{font-size:1.8rem;font-weight:300;color:var(--dim2);letter-spacing:0.15em;margin-bottom:1rem;}
+  .axiom-block .desc{color:var(--dim);max-width:560px;margin:0 auto;font-size:0.93rem;line-height:1.85;}
+  .axiom-block .desc strong{color:var(--text2);font-weight:600;}
+
+  /* table */
+  .data-table{width:100%;border-collapse:collapse;margin:1.5rem 0;}
+  .data-table th,.data-table td{padding:1rem 1.2rem;text-align:left;font-size:0.88rem;}
+  .data-table th{font-size:0.65rem;letter-spacing:0.2em;color:var(--dim2);text-transform:uppercase;border-bottom:2px solid var(--border);font-weight:600;}
+  .data-table td{color:var(--text2);border-bottom:1px solid var(--border);}
+  .data-table .bw{display:flex;align-items:center;gap:0.6rem;}
+  .data-table .bar{height:5px;border-radius:3px;min-width:16px;transition:width 2s cubic-bezier(0.16,1,0.3,1);}
+  .data-table .bar.am{background:var(--amber);}.data-table .bar.tl{background:var(--teal);}.data-table .bar.pl{background:var(--purple);}
+
+  /* blockquote */
+  blockquote{transition:all 0.4s ease-out;border-left:3px solid var(--amber);padding:1rem 0 1rem 2rem;margin:2.5rem 0;font-size:1.15rem;color:var(--text2);font-weight:500;letter-spacing:-0.01em;line-height:1.6;background:rgba(240,160,64,0.03);border-radius:0 10px 10px 0;}
+  blockquote:hover{border-left-color:var(--teal);background:rgba(64,224,192,0.04);transform:translateX(6px);padding-left:2.3rem;}
+
+  /* keywords */
+  .kw-cloud{display:flex;flex-wrap:wrap;gap:0.7rem;justify-content:center;}
+  .kw{padding:0.5rem 1.2rem;border-radius:100px;font-size:0.82rem;border:1px solid var(--border);background:var(--surface);color:var(--dim);transition:all 0.35s;cursor:default;}
+  .kw:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);transform:translateY(-3px);box-shadow:0 8px 24px -4px var(--teal-glow);}
+
+  /* cta */
+  .cta-section{text-align:center;}
+  .cta-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:1rem 2.8rem;border-radius:100px;
+    background:linear-gradient(135deg,var(--amber),var(--teal));color:#000;text-decoration:none;font-weight:700;font-size:0.92rem;
+    transition:all 0.4s;box-shadow:0 4px 24px rgba(64,224,192,0.2);}
+  .cta-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 40px rgba(240,160,64,0.35);}
+
+  footer{position:relative;z-index:2;text-align:center;padding:5rem 2rem;color:var(--dim2);font-size:0.8rem;border-top:1px solid var(--border);}
+  @media(max-width:640px){.card{padding:1.8rem 1.3rem;}.axiom-block{padding:2.5rem 1.5rem;}}
+</style>
+</head>
+<body>
+
+<div class="glow-layer" id="glow-layer">
+  <div class="glow-orb go-1"></div><div class="glow-orb go-2"></div>
+  <div class="glow-orb go-3"></div><div class="glow-orb go-4"></div>
+</div>
+<div class="dot-grid"></div>
+<div id="progress"></div>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">One Entry · <span>Zero</span> Centers</a>
+    <div class="nav-lang">
+      <button class="active" onclick="switchLang('zh')">中文</button>
+      <button onclick="switchLang('en')">English</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ====== HERO ====== -->
+<section class="hero" id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <p class="eyebrow" data-i18n="hero-eyebrow">Early Stage Framework · Seeking Feedback</p>
+    <h1 id="hero-title"></h1>
+    <p class="sub" id="hero-sub"></p>
+  </div>
+  <div class="scroll-tag" data-i18n="scroll-hint">SCROLL TO EXPLORE</div>
+</section>
+
+<!-- ====== 01 · TWO FORCES ====== -->
+<section id="s01">
+  <div class="sec-num" data-i18n="s01-label">01 · Two Forces</div>
+  <h2 data-i18n-html="s01-title" id="s01-title">同一条曲线的<br>两个方向</h2>
+  <div class="lead" data-i18n-html="s01-lead">
+    <p>人类文明史，本质上是一部"把更多功能塞进更少入口"的历史。从驿站到邮局、从火车站到机场、从银行柜台到移动支付——每一次技术代际更替，都在做同一件事：<strong>合并入口</strong>。</p>
+    <p style="margin-top:1rem;">但信息不需要走同样的路。当工作向中心收敛时，信息可以——也必须——向相反方向消散。这是两股同时发生的力量，不是先后关系，不是因果关系，而是<strong>同一系统的两种运动</strong>。就像呼吸：没有人会说吸气是呼气的原因。它们必须同时存在。</p>
+  </div>
+
+  <div class="cards col2">
+    <div class="card amber" id="card-inward">
+      <div class="icn">⏺</div>
+      <h3 data-i18n="inward-title">工作集中化</h3>
+      <p data-i18n="inward-desc">人类从发明"邮局"开始，就在不断把分散的功能压缩进统一的入口。驿站→邮局→电报→电话→短信→微信——通信史就是一部"入口收敛史"。移动支付把整个钱包塞进一个 App；智能手机把 50+ 种设备合并成一块玻璃。下一个逻辑节点是什么？一个 Agent。它不再是一个"App"，而是你与数字世界之间的唯一界面。你跟它说一句话，它理解你的一切需求，替你完成一切操作。</p>
+      <p style="margin-top:1rem;color:var(--amber);font-size:0.82rem;" data-i18n="inward-key">关键洞见：集中化不是"选择"，是文明演化的底层逻辑。</p>
+      <div class="tl-line">
+        <div class="tl-dot"><div class="tly">~1850</div><div class="tlt" data-i18n="tl-1">驿站→邮局</div></div>
+        <div class="tl-dot"><div class="tly">~1900</div><div class="tlt" data-i18n="tl-2">车站→机场</div></div>
+        <div class="tl-dot"><div class="tly">~2000</div><div class="tlt" data-i18n="tl-3">现金→移动支付</div></div>
+        <div class="tl-dot"><div class="tly">~2015</div><div class="tlt" data-i18n="tl-4">50+设备→手机</div></div>
+        <div class="tl-dot"><div class="tly">→ 2030</div><div class="tlt" data-i18n="tl-5">万App→Agent</div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag" data-i18n="tag-post">驿站→邮局</span>
+        <span class="tag" data-i18n="tag-phone">50+设备→1部手机</span>
+        <span class="tag" data-i18n="tag-agent">Agent 是逻辑终点</span>
+      </div>
+    </div>
+
+    <div class="card teal" id="card-outward">
+      <div class="icn">⟐</div>
+      <h3 data-i18n="outward-title">信息去中心化</h3>
+      <p data-i18n="outward-desc">如果说工作的方向是"向内"，信息的方向就是"向外"。BTC 在 2009 年首次证明了一件事：价值可以原生地存在于链上，不需要任何中央机构背书。以太坊进一步证明了合约可以自动执行——法律和代码开始融合。NFT 证明了数字所有权不需要登记处。DePIN（去中心化物理基础设施）在把无线网络、能源、地图、算力拉上链。DeSci 在变革科研经费和同行评审。RWA 在代币化房地产、债券、大宗商品。</p>
+      <p style="margin-top:1rem;color:var(--teal);font-size:0.82rem;" data-i18n="outward-key">关键洞见：链不是"另一种金融工具"，链是社会的新基础设施层。</p>
+      <div class="tl-line">
+        <div class="tl-dot"><div class="tly">2009</div><div class="tlt" data-i18n="tl-6">BTC 创世</div></div>
+        <div class="tl-dot"><div class="tly">2015</div><div class="tlt" data-i18n="tl-7">以太坊·智能合约</div></div>
+        <div class="tl-dot"><div class="tly">2021</div><div class="tlt" data-i18n="tl-8">NFT·DeFi·DePIN</div></div>
+        <div class="tl-dot"><div class="tly">2025</div><div class="tlt" data-i18n="tl-9">DeSci·RWA</div></div>
+        <div class="tl-dot"><div class="tly">→ 20??</div><div class="tlt" data-i18n="tl-10">链=社会基础设施</div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag" data-i18n="tag-btc">BTC：无需背书的价值</span>
+        <span class="tag" data-i18n="tag-eth">ETH：可编程合约</span>
+        <span class="tag" data-i18n="tag-chain">链=生活全部</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 02 · DIAGRAM ====== -->
+<section id="s02">
+  <div class="sec-num" data-i18n="s02-label">02 · Dynamic Structure</div>
+  <h2 data-i18n-html="s02-title" id="s02-title">内收与外散<br>同时发生</h2>
+  <div class="lead" data-i18n-html="s02-lead">
+    <p>橙色粒子从四面八方涌向中心——这是工作的集中化：功能不断合并，入口不断减少。青色粒子从中心向外扩散——这是信息的去中心化：数据从服务器流向链上，从可控走向不可辨。</p>
+    <p style="margin-top:1rem;">两个过程不是对立的。它们互为前提。集中化为去中心化提供了统一的交互界面——你只需要面对一个 Agent。去中心化为集中化提供了不可篡改的数据基础——Agent 背后的一切都是链上原生。</p>
+    <p style="margin-top:1rem;">这就好比黑洞：所有物质被吸进去（集中），但内部结构在事件视界之后完全不可分辨（去中心）。信息从"锁在保险柜里"变成了"一颗沙藏在沙滩上"。</p>
+  </div>
+  <div class="diagram-box" id="diagram-box">
+    <canvas id="diagram-canvas"></canvas>
+    <div class="diagram-legend">
+      <span><span class="ld am"></span> <span data-i18n="legend-inward">工作 / 功能 向内收敛</span></span>
+      <span><span class="ld tl"></span> <span data-i18n="legend-outward">信息 / Token 向外消散</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 03 · AXIOM ====== -->
+<section id="s03">
+  <div class="sec-num" data-i18n="s03-label">03 · Core Axiom</div>
+  <h2 data-i18n="s03-title" id="s03-title">信息就是 Token</h2>
+  <div class="lead" data-i18n-html="s03-lead">
+    <p>这是整个框架的底层逻辑。信息与 Token 之间，不是"代表"关系——不是说"用 Token 来代表一条信息"。不是"兑换"关系——不是说"用信息去换 Token"。而是<strong>严格的同一性</strong>：信息本身就是 Token。你不需要"变现"。你的存在本身——你的每一次交互、每一次决策、每一次创造——就是 Token 的发行过程。</p>
+    <p style="margin-top:1rem;">这个洞见来自物理学中最深刻的公式之一：E=mc²。在爱因斯坦之前，人们以为质量和能量是两种不同的东西——你可以把质量"转化"为能量。但 E=mc² 说的是：它们不是两种东西，它们是<strong>同一个东西的两种表现形式</strong>。同样，信息、Token、社会价值——三者是同一个东西的三种表现。不是"等价"，是"同一"。</p>
+  </div>
+
+  <div class="axiom-block" id="axiom-block">
+    <div class="eq"><span class="a">信息</span> &nbsp;:&nbsp; <span class="t">Token</span> &nbsp;:&nbsp; 社会价值</div>
+    <div class="ratio">N : N</div>
+    <p class="desc" data-i18n-html="axiom-desc">
+      不是 1:1。一条医疗诊断和一个社交媒体点赞，显然不该"等值"。<br>
+      不同类别、不同权重、不同上下文的信息，对应不同量级的 Token。<br>
+      但每一种信息 <strong>都是</strong> Token——不是"换来的"，是"本身就是"。<br>
+      你的 Token 总量 = 你的加权信息量 = 你的社会价值 = 你可调用的全部资源。
+    </p>
+  </div>
+
+  <div class="axiom-block" style="text-align:left;padding:3rem 2.5rem;" id="weight-block">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.5rem;text-align:center;" data-i18n="weight-title">信息 Token 权重映射（示例）</h3>
+    <table class="data-table">
+      <thead><tr><th data-i18n="wt-type">信息类型</th><th data-i18n="wt-weight">权重</th><th data-i18n="wt-reason">原因</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="wt-1-type">医疗诊断</td><td><span class="bw"><span class="bar am" data-width="120"></span> 极高</span></td><td data-i18n="wt-1-reason">涉及生命决策，不可逆，高价值密度</td></tr>
+        <tr><td data-i18n="wt-2-type">合同 / 法律文件</td><td><span class="bw"><span class="bar am" data-width="96"></span> 高</span></td><td data-i18n="wt-2-reason">社会运行的基础单元，可验证性强</td></tr>
+        <tr><td data-i18n="wt-3-type">研究数据 / 论文</td><td><span class="bw"><span class="bar pl" data-width="72"></span> 中高</span></td><td data-i18n="wt-3-reason">知识增量，具有长期复利效应</td></tr>
+        <tr><td data-i18n="wt-4-type">社交互动</td><td><span class="bw"><span class="bar tl" data-width="44"></span> 中</span></td><td data-i18n="wt-4-reason">构成社会关系网络，但单条密度低</td></tr>
+        <tr><td data-i18n="wt-5-type">浏览 / 消费记录</td><td><span class="bw"><span class="bar tl" data-width="20"></span> 低</span></td><td data-i18n="wt-5-reason">高频但低信息密度，聚合后才有价值</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cards col3" id="impl-cards">
+    <div class="card purple">
+      <div class="icn">Ⅰ</div>
+      <h3 data-i18n="impl-1-title">信息即货币</h3>
+      <p data-i18n="impl-1-desc">Token 不只是金融工具——它是你在数字世界的全部存在。每一次交互都是一次"铸币"。你的存在本身就是发行。不是"我在工作所以我有价值"，而是"我存在所以我有 Token"。这是对人类经济基础的根本性重写。</p>
+    </div>
+    <div class="card purple">
+      <div class="icn">Ⅱ</div>
+      <h3 data-i18n="impl-2-title">隐私被消解——不是被侵犯</h3>
+      <p data-i18n="impl-2-desc">当信息=价值=Token=链上公开数据，"隐私"这个概念在逻辑上就不再成立。这不是"隐私被侵犯了"——是"隐私"这个范畴本身消失了。就像你无法在一片沙滩上偷走一粒特定的沙子——不是因为它被藏起来了，而是因为它在人群中无法被单独识别。</p>
+    </div>
+    <div class="card purple">
+      <div class="icn">Ⅲ</div>
+      <h3 data-i18n="impl-3-title">存在即价值——不需要"变现"</h3>
+      <p data-i18n="impl-3-desc">今天的经济逻辑：数据→平台→广告费→利润。你的数据要经过层层转换才能变成价值——大多数价值被平台抽走了。在这个框架里，数据本身就是价值，不需要转换。从"雇佣劳动产生价值"到"存在本身产生价值"——这是对人类劳动和价值体系的根本性重定义。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 04 · WHY BELIEVE ====== -->
+<section id="s04">
+  <div class="sec-num" data-i18n="s04-label">04 · Why Believe</div>
+  <h2 data-i18n-html="s04-title" id="s04-title">不靠信仰<br>靠可观测的趋势</h2>
+  <div class="lead" data-i18n-html="s04-lead">
+    <p>这个框架不是凭空想象的。它基于三个已经在发生的事情——它们各自独立存在，但没有被拼在一起。这里的核心主张是：<strong>这三个趋势不是孤立的——它们是同一个系统的三个侧面</strong>。这个框架就是那个"拼图"。</p>
+  </div>
+
+  <div class="card amber" style="margin-bottom:1.5rem;" id="trend-a">
+    <div class="icn">A</div>
+    <h3 data-i18n="why-a-title">集中化从未停止——而且正在加速</h3>
+    <p data-i18n="why-a-desc">一部智能手机替代了电话、相机、地图、钱包、闹钟、计算器、手电筒、收音机、电视、游戏机、录音笔、指南针、日历、词典、MP3、GPS、信件、报纸——超过 50 种独立设备和媒介。这不是"科技创新"，这是"入口合并"。ChatGPT 在 2023 年 11 月发布，2 个月内达到 1 亿月活用户——用一个对话框替代了搜索引擎、写作工具、编程助手、翻译软件、客服系统。软件层正在经历硬件层已经完成的同一个过程：压缩。下一个逻辑节点是 Agent——一个理解你一切需求、替你完成一切操作的单一代理。事实上你已经在用了：你跟 ChatGPT 说的每一句话，就是"用一个入口完成多种任务"的雏形。</p>
+    <div class="num-grid">
+      <div class="num-item"><div class="n" style="color:var(--amber);" data-to="50">0</div><div class="l" data-i18n="badge-replaced">种设备被一部手机替代</div></div>
+      <div class="num-item"><div class="n" style="color:var(--amber);" data-to="100">0</div><div class="l" data-i18n="badge-chatgpt">ChatGPT 百万用户（2个月内）</div></div>
+      <div class="num-item"><div class="n" style="color:var(--amber);" data-to="20">0</div><div class="l" data-i18n="badge-agent">2025 Agent 赛道融资 ($B)</div></div>
+    </div>
+  </div>
+
+  <div class="card teal" style="margin-bottom:1.5rem;" id="trend-b">
+    <div class="icn">B</div>
+    <h3 data-i18n="why-b-title">隐私已经死了——不是"正在消亡"，是"已经不在了"</h3>
+    <p data-i18n="why-b-desc">你的数据不在你手里。它在 Google、Meta、腾讯、字节跳动、Amazon 的服务器上。据卡内基梅隆大学研究，读完你一年同意的所有隐私条款需要 76 个完整工作日。ITRC 报告显示，2023 年美国发生了 3205 起公开披露的数据泄露事件——平均每天近 9 起。Cambridge Analytica 8700 万用户、Equifax 1.47 亿、Facebook 5 亿、T-Mobile 1 亿——这些不是"偶发事故"，这是系统性的。因为数据有价值，所以有人收集；因为集中存储，所以可以泄露；因为可以泄露，它就会泄露。隐私不是"被侵犯了"——它已经不存在了。唯一的出路不是更坚固的锁，而是让锁变得没有意义：让数据本身无法被单独识别。就像把一杯水倒进大海——水还在，但无法被"找到"。</p>
+    <div class="num-grid">
+      <div class="num-item"><div class="n" style="color:var(--teal);" data-to="4000">0</div><div class="l" data-i18n="badge-breaches">年数据泄露事件（全球）</div></div>
+      <div class="num-item"><div class="n" style="color:var(--teal);" data-to="76">0</div><div class="l" data-i18n="badge-tos">读完一年隐私条款所需工作日</div></div>
+      <div class="num-item"><div class="n" style="color:var(--teal);" data-to="87">0</div><div class="l" data-i18n="badge-ca">Cambridge Analytica 影响 (M)</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem;border-color:rgba(180,140,240,0.15);" id="trend-c">
+    <div class="icn" style="background:linear-gradient(135deg,var(--teal-bg),var(--purple-bg));background:linear-gradient(135deg,rgba(64,224,192,0.1),rgba(180,140,240,0.1));">C</div>
+    <h3 style="background:linear-gradient(135deg,var(--teal),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;" data-i18n="why-c-title">链已经从金融走向全部生活</h3>
+    <p data-i18n="why-c-desc">BTC（2009）——第一次，价值可以在链上原生存在，不需要任何中央机构背书。以太坊（2015）——合约可以自动执行，法律和代码开始融合。NFT（2021）——数字所有权不再需要登记处。DePIN——去中心化物理基础设施：无线网络（Helium）、能源、地图（Hivemapper）、算力正在被拉上链。DeSci——科研经费分配和同行评审正在被去中心化。RWA——房地产、债券、大宗商品正在被代币化，预计到 2030 年市场规模达 $16 万亿。进化路径不是猜测：货币 → 金融 → 资产 → 身份 → 社交 → 全部生活。每一步都已经在发生。这个框架不过是把这条曲线推到了逻辑终点。</p>
+    <div class="num-grid">
+      <div class="num-item"><div class="n" style="color:var(--teal);" data-to="1.9">0</div><div class="l" data-i18n="badge-btc">BTC 市值峰值 ($T)</div></div>
+      <div class="num-item"><div class="n" style="color:var(--teal);" data-to="100">0</div><div class="l" data-i18n="badge-defi">DeFi TVL ($B)</div></div>
+      <div class="num-item"><div class="n" style="color:var(--purple);" data-to="16">0</div><div class="l" data-i18n="badge-rwa">RWA 2030 预测 ($T)</div></div>
+    </div>
+  </div>
+
+  <blockquote data-i18n="s04-quote">
+    三个趋势各自独立存在。集中化从未停止——你每打开一次 ChatGPT 就在参与它。隐私已经死了——你的每一次"我同意"都是墓志铭。链正在吞噬世界——从货币到身份到全部生活。缺的只是一个把它们拼在一起的框架。这就是这个框架要做的事。
+  </blockquote>
+</section>
+
+<!-- ====== 05 · IMPLICATIONS ====== -->
+<section id="s05">
+  <div class="sec-num" data-i18n="s05-label">05 · Implications</div>
+  <h2 data-i18n-html="s05-title" id="s05-title">如果这个框架成立<br>重置的不只是互联网</h2>
+  <div class="lead" data-i18n-html="s05-lead">
+    <p>三个层面，三层推演。这不是"科技预测"——这是从已有趋势出发的逻辑延伸。</p>
+  </div>
+
+  <div class="cards col3" id="imp-cards">
+    <div class="card amber">
+      <div class="icn">💰</div>
+      <h3 data-i18n="imp-econ-title">经济层面：Token 是唯一货币</h3>
+      <p data-i18n="imp-econ-body">当信息=Token=价值，Token 不是"另一种货币"——它是唯一货币。因为它和信息完全等价，而信息是人类活动的全部产物。任何不由信息直接生成的货币——法币、黄金、股票——在这个框架里都失去了逻辑基础。货币不再是"由国家信用背书的价值符号"，而是"人类活动的原生计量单位"。就像物理学里米是长度的单位——不是"米代表长度"，而是长度本身就用来计量。Token 之于价值，就像米之于长度。</p>
+    </div>
+    <div class="card purple">
+      <div class="icn">👤</div>
+      <h3 data-i18n="imp-social-title">社会层面：价值不再由工资决定</h3>
+      <p data-i18n="imp-social-body">今天，一个人的"社会价值"被工资、职位、社会地位粗略地近似——而且这些近似都是间接的、容易被操纵的。Token 余额改变了一切。不是因为你"赚"了这些 Token，而是因为这些 Token 就是你——你的每一次有意义的交互，都在产生加权后的信息，也就是在产生 Token。你不需要"找一份工作来证明自己的价值"。你只需要活着、创造、交互。这是从"雇佣劳动"到"存在本身"的转变。</p>
+    </div>
+    <div class="card teal">
+      <div class="icn">⚙</div>
+      <h3 data-i18n="imp-tech-title">技术层面：两样东西目前都不存在</h3>
+      <p data-i18n="imp-tech-body">需要一个能承载全人类信息的链——百亿人，每秒万亿级信息事件。需要低延迟、高吞吐、抗审查、无需许可。以及一个能理解一切、代表一切、执行一切的 Agent——不是今天的 ChatGPT，而是能替你管理全部数字生命的单一代理。这两样东西目前都不存在。但它们分别是信息层和工作层的逻辑终点。它们不是"会有人造的"——它们是"必须存在的"，因为曲线指向那里。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 06 · STAGE ====== -->
+<section id="s06" style="text-align:center;">
+  <div class="sec-num" data-i18n="s06-label">06 · Current Stage</div>
+  <div class="axiom-block" id="stage-block" style="border-color:rgba(255,255,255,0.06);">
+    <p style="font-size:1rem;color:var(--dim);margin-bottom:1.2rem;" data-i18n-html="stage-head">
+      <strong style="color:var(--text);">早期探索阶段</strong>
+    </p>
+    <p style="color:var(--dim);font-size:0.9rem;line-height:1.9;max-width:520px;margin:0 auto;" data-i18n-html="stage-body">
+      它不是成品，是一颗种子。<br>
+      很多问题还没有答案——这正是最令人兴奋的地方。<br>
+      如果你觉得某个地方不对，或者有更好的方案——请告诉我。<br>
+      好的想法是在争论和迭代中长出来的。
+    </p>
+  </div>
+</section>
+
+<!-- ====== 07 · KWS ====== -->
+<section id="s07">
+  <div class="sec-num" data-i18n="s07-label">07 · Keywords</div>
+  <div class="kw-cloud" id="kw-cloud">
+    <span class="kw">工作集中化</span>
+    <span class="kw">信息去中心化</span>
+    <span class="kw">信息=Token=价值</span>
+    <span class="kw">N:N 等价互换</span>
+    <span class="kw">一个入口</span>
+    <span class="kw">零个中心</span>
+    <span class="kw">隐私消失在人群中</span>
+    <span class="kw">链即生活</span>
+    <span class="kw">Agent 代理</span>
+    <span class="kw">存在即价值</span>
+    <span class="kw">Token 即货币</span>
+    <span class="kw">E=mc² 式同一性</span>
+  </div>
+</section>
+
+<!-- ====== 08 · PAPER ====== -->
+<section class="cta-section" id="s08">
+  <div class="sec-num" data-i18n="s08-label">08 · Paper</div>
+  <h2 data-i18n="s08-title" id="s08-title">活文档，持续生长</h2>
+  <p class="lead" style="margin:0 auto 2rem;" data-i18n="s08-desc">一份不断迭代的完整框架文档。从想法到行动的起点。</p>
+  <a href="paper.html" class="cta-btn" data-i18n="paper-btn">阅读完整框架 →</a>
+</section>
+
+<footer data-i18n="footer">一个在生长中的想法 · 2026</footer>
+
+<!-- ====== LIBS ====== -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+<!-- ====== LANGUAGE ====== -->
+<script>
+const T={
+zh:{
+'hero-eyebrow':'Early Stage Framework · Seeking Feedback',
+'hero-title':'一个入口<br>零个中心',
+'hero-sub':'工作向内收敛为一个 <em>Agent</em>。<br>信息向外消散为 <em>Token</em>。<br>同一枚硬币的两面。',
+'scroll-hint':'SCROLL TO EXPLORE',
+'s01-label':'01 · 两股力量',
+'s01-title':'同一条曲线的<br>两个方向',
+'s01-lead':'<p>人类文明史，本质上是一部"把更多功能塞进更少入口"的历史。从驿站到邮局、从火车站到机场、从银行柜台到移动支付——每一次技术代际更替，都在做同一件事：<strong>合并入口</strong>。</p><p style="margin-top:1rem;">但信息不需要走同样的路。当工作向中心收敛时，信息可以——也必须——向相反方向消散。这是两股同时发生的力量，不是先后关系，不是因果关系，而是<strong>同一系统的两种运动</strong>。就像呼吸：没有人会说吸气是呼气的原因。它们必须同时存在。</p>',
+'inward-title':'工作集中化',
+'inward-desc':'人类从发明"邮局"开始，就在不断把分散的功能压缩进统一的入口。驿站→邮局→电报→电话→短信→微信——通信史就是一部"入口收敛史"。移动支付把整个钱包塞进一个 App；智能手机把 50+ 种设备合并成一块玻璃。下一个逻辑节点是什么？一个 Agent。它不再是一个"App"，而是你与数字世界之间的唯一界面。你跟它说一句话，它理解你的一切需求，替你完成一切操作。',
+'inward-key':'关键洞见：集中化不是"选择"，是文明演化的底层逻辑。',
+'tl-1':'驿站→邮局','tl-2':'车站→机场','tl-3':'现金→移动支付','tl-4':'50+设备→手机','tl-5':'万App→Agent',
+'tag-post':'驿站→邮局','tag-phone':'50+设备→1部手机','tag-agent':'Agent 是逻辑终点',
+'outward-title':'信息去中心化',
+'outward-desc':'如果说工作的方向是"向内"，信息的方向就是"向外"。BTC 在 2009 年首次证明了一件事：价值可以原生地存在于链上，不需要任何中央机构背书。以太坊进一步证明了合约可以自动执行——法律和代码开始融合。NFT 证明了数字所有权不需要登记处。DePIN（去中心化物理基础设施）在把无线网络、能源、地图、算力拉上链。DeSci 在变革科研经费和同行评审。RWA 在代币化房地产、债券、大宗商品。',
+'outward-key':'关键洞见：链不是"另一种金融工具"，链是社会的新基础设施层。',
+'tl-6':'BTC 创世','tl-7':'以太坊·智能合约','tl-8':'NFT·DeFi·DePIN','tl-9':'DeSci·RWA','tl-10':'链=社会基础设施',
+'tag-btc':'BTC：无需背书的价值','tag-eth':'ETH：可编程合约','tag-chain':'链=生活全部',
+'s02-label':'02 · 动态结构',
+'s02-title':'内收与外散<br>同时发生',
+'s02-lead':'<p>橙色粒子从四面八方涌向中心——这是工作的集中化：功能不断合并，入口不断减少。青色粒子从中心向外扩散——这是信息的去中心化：数据从服务器流向链上，从可控走向不可辨。</p><p style="margin-top:1rem;">两个过程不是对立的。它们互为前提。集中化为去中心化提供了统一的交互界面——你只需要面对一个 Agent。去中心化为集中化提供了不可篡改的数据基础——Agent 背后的一切都是链上原生。</p><p style="margin-top:1rem;">这就好比黑洞：所有物质被吸进去（集中），但内部结构在事件视界之后完全不可分辨（去中心）。信息从"锁在保险柜里"变成了"一颗沙藏在沙滩上"。</p>',
+'legend-inward':'工作 / 功能 向内收敛','legend-outward':'信息 / Token 向外消散',
+'s03-label':'03 · 核心公理',
+'s03-title':'信息就是 Token',
+'s03-lead':'<p>这是整个框架的底层逻辑。信息与 Token 之间，不是"代表"关系——不是说"用 Token 来代表一条信息"。不是"兑换"关系——不是说"用信息去换 Token"。而是<strong>严格的同一性</strong>：信息本身就是 Token。你不需要"变现"。你的存在本身——你的每一次交互、每一次决策、每一次创造——就是 Token 的发行过程。</p><p style="margin-top:1rem;">这个洞见来自物理学中最深刻的公式之一：E=mc²。在爱因斯坦之前，人们以为质量和能量是两种不同的东西——你可以把质量"转化"为能量。但 E=mc² 说的是：它们不是两种东西，它们是<strong>同一个东西的两种表现形式</strong>。同样，信息、Token、社会价值——三者是同一个东西的三种表现。不是"等价"，是"同一"。</p>',
+'axiom-desc':'不是 1:1。一条医疗诊断和一个社交媒体点赞，显然不该"等值"。<br>不同类别、不同权重、不同上下文的信息，对应不同量级的 Token。<br>但每一种信息 <strong>都是</strong> Token——不是"换来的"，是"本身就是"。<br>你的 Token 总量 = 你的加权信息量 = 你的社会价值 = 你可调用的全部资源。',
+'weight-title':'信息 Token 权重映射（示例）',
+'wt-type':'信息类型','wt-weight':'权重','wt-reason':'原因',
+'wt-1-type':'医疗诊断','wt-1-reason':'涉及生命决策，不可逆，高价值密度',
+'wt-2-type':'合同 / 法律文件','wt-2-reason':'社会运行的基础单元，可验证性强',
+'wt-3-type':'研究数据 / 论文','wt-3-reason':'知识增量，具有长期复利效应',
+'wt-4-type':'社交互动','wt-4-reason':'构成社会关系网络，但单条密度低',
+'wt-5-type':'浏览 / 消费记录','wt-5-reason':'高频但低信息密度，聚合后才有价值',
+'impl-1-title':'信息即货币',
+'impl-1-desc':'Token 不只是金融工具——它是你在数字世界的全部存在。每一次交互都是一次"铸币"。你的存在本身就是发行。不是"我在工作所以我有价值"，而是"我存在所以我有 Token"。这是对人类经济基础的根本性重写。',
+'impl-2-title':'隐私被消解——不是被侵犯',
+'impl-2-desc':'当信息=价值=Token=链上公开数据，"隐私"这个概念在逻辑上就不再成立。这不是"隐私被侵犯了"——是"隐私"这个范畴本身消失了。就像你无法在一片沙滩上偷走一粒特定的沙子——不是因为它被藏起来了，而是因为它在人群中无法被单独识别。',
+'impl-3-title':'存在即价值——不需要"变现"',
+'impl-3-desc':'今天的经济逻辑：数据→平台→广告费→利润。你的数据要经过层层转换才能变成价值——大多数价值被平台抽走了。在这个框架里，数据本身就是价值，不需要转换。从"雇佣劳动产生价值"到"存在本身产生价值"——这是对人类劳动和价值体系的根本性重定义。',
+'s04-label':'04 · 为什么相信',
+'s04-title':'不靠信仰<br>靠可观测的趋势',
+'s04-lead':'<p>这个框架不是凭空想象的。它基于三个已经在发生的事情——它们各自独立存在，但没有被拼在一起。这里的核心主张是：<strong>这三个趋势不是孤立的——它们是同一个系统的三个侧面</strong>。这个框架就是那个"拼图"。</p>',
+'why-a-title':'集中化从未停止——而且正在加速',
+'why-a-desc':'一部智能手机替代了电话、相机、地图、钱包、闹钟、计算器、手电筒、收音机、电视、游戏机、录音笔、指南针、日历、词典、MP3、GPS、信件、报纸——超过 50 种独立设备和媒介。这不是"科技创新"，这是"入口合并"。ChatGPT 在 2023 年 11 月发布，2 个月内达到 1 亿月活用户——用一个对话框替代了搜索引擎、写作工具、编程助手、翻译软件、客服系统。软件层正在经历硬件层已经完成的同一个过程：压缩。下一个逻辑节点是 Agent——一个理解你一切需求、替你完成一切操作的单一代理。事实上你已经在用了：你跟 ChatGPT 说的每一句话，就是"用一个入口完成多种任务"的雏形。',
+'badge-replaced':'种设备被一部手机替代','badge-chatgpt':'ChatGPT 百万用户（2个月内）','badge-agent':'2025 Agent 赛道融资 ($B)',
+'why-b-title':'隐私已经死了——不是"正在消亡"，是"已经不在了"',
+'why-b-desc':'你的数据不在你手里。它在 Google、Meta、腾讯、字节跳动、Amazon 的服务器上。据卡内基梅隆大学研究，读完你一年同意的所有隐私条款需要 76 个完整工作日。ITRC 报告显示，2023 年美国发生了 3205 起公开披露的数据泄露事件——平均每天近 9 起。Cambridge Analytica 8700 万用户、Equifax 1.47 亿、Facebook 5 亿、T-Mobile 1 亿——这些不是"偶发事故"，这是系统性的。因为数据有价值，所以有人收集；因为集中存储，所以可以泄露；因为可以泄露，它就会泄露。隐私不是"被侵犯了"——它已经不存在了。唯一的出路不是更坚固的锁，而是让锁变得没有意义：让数据本身无法被单独识别。就像把一杯水倒进大海——水还在，但无法被"找到"。',
+'badge-breaches':'年数据泄露事件（全球）','badge-tos':'读完一年隐私条款所需工作日','badge-ca':'Cambridge Analytica 影响 (M)',
+'why-c-title':'链已经从金融走向全部生活',
+'why-c-desc':'BTC（2009）——第一次，价值可以在链上原生存在，不需要任何中央机构背书。以太坊（2015）——合约可以自动执行，法律和代码开始融合。NFT（2021）——数字所有权不再需要登记处。DePIN——去中心化物理基础设施：无线网络（Helium）、能源、地图（Hivemapper）、算力正在被拉上链。DeSci——科研经费分配和同行评审正在被去中心化。RWA——房地产、债券、大宗商品正在被代币化，预计到 2030 年市场规模达 $16 万亿。进化路径不是猜测：货币 → 金融 → 资产 → 身份 → 社交 → 全部生活。每一步都已经在发生。这个框架不过是把这条曲线推到了逻辑终点。',
+'badge-btc':'BTC 市值峰值 ($T)','badge-defi':'DeFi TVL ($B)','badge-rwa':'RWA 2030 预测 ($T)',
+'s04-quote':'三个趋势各自独立存在。集中化从未停止——你每打开一次 ChatGPT 就在参与它。隐私已经死了——你的每一次"我同意"都是墓志铭。链正在吞噬世界——从货币到身份到全部生活。缺的只是一个把它们拼在一起的框架。这就是这个框架要做的事。',
+'s05-label':'05 · 未来推演',
+'s05-title':'如果这个框架成立<br>重置的不只是互联网',
+'s05-lead':'<p>三个层面，三层推演。这不是"科技预测"——这是从已有趋势出发的逻辑延伸。</p>',
+'imp-econ-title':'经济层面：Token 是唯一货币',
+'imp-econ-body':'当信息=Token=价值，Token 不是"另一种货币"——它是唯一货币。因为它和信息完全等价，而信息是人类活动的全部产物。任何不由信息直接生成的货币——法币、黄金、股票——在这个框架里都失去了逻辑基础。货币不再是"由国家信用背书的价值符号"，而是"人类活动的原生计量单位"。就像物理学里米是长度的单位——不是"米代表长度"，而是长度本身就用来计量。Token 之于价值，就像米之于长度。',
+'imp-social-title':'社会层面：价值不再由工资决定',
+'imp-social-body':'今天，一个人的"社会价值"被工资、职位、社会地位粗略地近似——而且这些近似都是间接的、容易被操纵的。Token 余额改变了一切。不是因为你"赚"了这些 Token，而是因为这些 Token 就是你——你的每一次有意义的交互，都在产生加权后的信息，也就是在产生 Token。你不需要"找一份工作来证明自己的价值"。你只需要活着、创造、交互。这是从"雇佣劳动"到"存在本身"的转变。',
+'imp-tech-title':'技术层面：两样东西目前都不存在',
+'imp-tech-body':'需要一个能承载全人类信息的链——百亿人，每秒万亿级信息事件。需要低延迟、高吞吐、抗审查、无需许可。以及一个能理解一切、代表一切、执行一切的 Agent——不是今天的 ChatGPT，而是能替你管理全部数字生命的单一代理。这两样东西目前都不存在。但它们分别是信息层和工作层的逻辑终点。它们不是"会有人造的"——它们是"必须存在的"，因为曲线指向那里。',
+'s06-label':'06 · 当前阶段',
+'stage-head':'<strong style="color:var(--text);">早期探索阶段</strong>',
+'stage-body':'它不是成品，是一颗种子。<br>很多问题还没有答案——这正是最令人兴奋的地方。<br>如果你觉得某个地方不对，或者有更好的方案——请告诉我。<br>好的想法是在争论和迭代中长出来的。',
+'s07-label':'07 · 关键词',
+'s08-label':'08 · 论文',
+'s08-title':'活文档，持续生长',
+'s08-desc':'一份不断迭代的完整框架文档。从想法到行动的起点。',
+'paper-btn':'阅读完整框架 →',
+'footer':'一个在生长中的想法 · 2026'
+},
+en:{
+'hero-eyebrow':'Early Stage Framework · Seeking Feedback',
+'hero-title':'One Entry<br>Zero Centers',
+'hero-sub':'Work converges inward into a single <em>Agent</em>.<br>Information disperses outward as <em>Tokens</em>.<br>Two sides of the same coin.',
+'scroll-hint':'SCROLL TO EXPLORE',
+'s01-label':'01 · Two Forces',
+'s01-title':'One Curve,<br>Two Directions',
+'s01-lead':'<p>Human civilization is, at its core, a story of "packing more functions into fewer gateways." From post stations to post offices, train stations to airports, bank counters to mobile payments — every generational shift does the same thing: <strong>merge gateways</strong>.</p><p style="margin-top:1rem;">But information doesn\'t have to follow the same path. While work converges toward the center, information can — and must — dissipate in the opposite direction. These are two simultaneous forces. Not sequential. Not causal. They are <strong>two motions of one system</strong>. Like breathing: no one says inhalation causes exhalation. They must exist together.</p>',
+'inward-title':'Centralization of Work',
+'inward-desc':'Since the invention of the "post office," humanity has been compressing scattered functions into unified gateways. Post stations→post offices→telegraph→telephone→SMS→WeChat — the history of communication IS a history of gateway convergence. Mobile payments packed an entire wallet into one app. Smartphones merged 50+ devices into a single glass slab. The next logical node? An Agent. Not another "app" — the sole interface between you and the digital world. You speak one sentence. It understands everything. It does everything.',
+'inward-key':'Key insight: Centralization is not a "choice" — it is the underlying logic of civilizational evolution.',
+'tl-1':'Post→Mail','tl-2':'Station→Airport','tl-3':'Cash→Mobile Pay','tl-4':'50+ Devices→Phone','tl-5':'All Apps→Agent',
+'tag-post':'Post stations→Post offices','tag-phone':'50+ devices→1 phone','tag-agent':'Agent is the endpoint',
+'outward-title':'Decentralization of Information',
+'outward-desc':'If work moves inward, information moves outward. BTC (2009) proved something for the first time: value can exist natively on a chain, requiring zero central authority. Ethereum proved contracts can self-execute — law and code began to merge. NFTs proved digital ownership needs no registry. DePIN is bringing wireless networks, energy, mapping, and compute on-chain. DeSci is transforming research funding and peer review. RWA is tokenizing real estate, bonds, commodities.',
+'outward-key':'Key insight: Blockchain is not "another financial tool" — it is the new infrastructure layer of society.',
+'tl-6':'BTC Genesis','tl-7':'Ethereum·Contracts','tl-8':'NFT·DeFi·DePIN','tl-9':'DeSci·RWA','tl-10':'Chain=Society',
+'tag-btc':'BTC: value without backing','tag-eth':'ETH: programmable contracts','tag-chain':'Chain = all of life',
+'s02-label':'02 · Dynamic Structure',
+'s02-title':'Inward & Outward,<br>Simultaneous',
+'s02-lead':'<p>Amber particles surge from all directions toward the center — centralization of work: functions merging, gateways shrinking. Teal particles radiate outward from the core — decentralization of information: data flowing from servers to chains, from controllable to indistinguishable.</p><p style="margin-top:1rem;">These processes are not opposed. They are each other\'s precondition. Centralization provides the unified interface — you only face one Agent. Decentralization provides the immutable data foundation — everything behind that Agent is natively on-chain.</p><p style="margin-top:1rem;">Think of a black hole: everything is pulled in (centralization), but the internal structure is completely indistinguishable beyond the event horizon (decentralization). Information goes from "locked in a safe" to "one grain of sand on a beach."</p>',
+'legend-inward':'Work / Function Inward','legend-outward':'Information / Token Outward',
+'s03-label':'03 · Core Axiom',
+'s03-title':'Information IS Token',
+'s03-lead':'<p>This is the foundational logic of the entire framework. The relationship between information and token is not "representation" — it\'s not "using tokens to represent information." It\'s not "exchange" — it\'s not "trading information for tokens." It is <strong>strict identity</strong>: information itself IS token. You don\'t need to "monetize." Your very existence — every interaction, every decision, every act of creation — is the process of token issuance.</p><p style="margin-top:1rem;">This insight comes from one of the deepest formulas in physics: E=mc². Before Einstein, people thought mass and energy were two different things — you could "convert" mass into energy. But E=mc² says: they are not two things, they are <strong>two expressions of the same thing</strong>. Likewise: information, token, and social value — three expressions of the same thing. Not "equivalent." Identical.</p>',
+'axiom-desc':'Not 1:1. A medical diagnosis and a social media like are clearly not "equal."<br>Different categories, weights, and contexts of information correspond to different magnitudes of Token.<br>But every piece of information <strong>is</strong> Token — not "exchanged for," but "is itself."<br>Your Token balance = your weighted information = your social value = your total callable resources.',
+'weight-title':'Information Token Weight Mapping (Examples)',
+'wt-type':'Information Type','wt-weight':'Weight','wt-reason':'Rationale',
+'wt-1-type':'Medical Diagnosis','wt-1-reason':'Life-critical, irreversible, high value density',
+'wt-2-type':'Contracts / Legal','wt-2-reason':'Foundation of social operation, highly verifiable',
+'wt-3-type':'Research / Papers','wt-3-reason':'Knowledge creation with compounding effects',
+'wt-4-type':'Social Interactions','wt-4-reason':'Forms social networks, low single-unit density',
+'wt-5-type':'Browsing / Consumption','wt-5-reason':'High frequency, low density, valuable in aggregate',
+'impl-1-title':'Information as Currency',
+'impl-1-desc':'Token isn\'t just a financial instrument — it is your entire digital existence. Every interaction is a "minting." Your existence itself is issuance. Not "I work therefore I have value," but "I exist therefore I have Tokens." This fundamentally rewrites the economic foundation of humanity.',
+'impl-2-title':'Privacy Dissolved — Not Violated',
+'impl-2-desc':'When information=value=token=public on-chain data, the concept of "privacy" logically ceases to exist. This isn\'t "privacy being violated" — the category of "privacy" itself disappears. Like trying to steal one specific grain of sand from a beach — not because it\'s hidden, but because it\'s indistinguishable in the crowd.',
+'impl-3-title':'Existence as Value — No "Monetization" Needed',
+'impl-3-desc':'Today\'s economic logic: data→platform→ad revenue→profit. Your data goes through layers of conversion before becoming value — and platforms take most of it. In this framework, data IS value. No conversion needed. From "labor creates value" to "existence itself creates value" — a fundamental redefinition of human labor and value systems.',
+'s04-label':'04 · Why Believe',
+'s04-title':'Not Faith —<br>Observable Trends',
+'s04-lead':'<p>This framework is not imagination. It\'s built on three things already happening — they exist independently, but have never been connected. The core claim: <strong>these three trends are not isolated — they are three sides of the same system</strong>. This framework is the "connection."</p>',
+'why-a-title':'Centralization Never Stopped — It\'s Accelerating',
+'why-a-desc':'A single smartphone replaced the telephone, camera, map, wallet, alarm clock, calculator, flashlight, radio, TV, game console, voice recorder, compass, calendar, dictionary, MP3 player, GPS, letters, newspapers — over 50 distinct devices and media. This isn\'t "tech innovation" — it\'s "gateway merger." ChatGPT launched November 2023, reached 100 million monthly active users within 2 months — replacing search engines, writing tools, coding assistants, translation, customer support with a single dialog box. The software layer is undergoing the same compression the hardware layer already completed. The next logical node is an Agent — a single proxy that understands all your needs and executes all your tasks. In fact, you\'re already using one: every sentence you type into ChatGPT is the prototype of "one gateway for many tasks."',
+'badge-replaced':'devices replaced by one phone','badge-chatgpt':'ChatGPT users in 2 months (M)','badge-agent':'2025 Agent sector funding ($B)',
+'why-b-title':'Privacy Is Already Dead — Not "Dying," Gone',
+'why-b-desc':'Your data isn\'t yours. It lives on servers owned by Google, Meta, Tencent, ByteDance, Amazon. According to Carnegie Mellon research, reading all the privacy policies you consent to annually would take 76 full working days. ITRC reports 3,205 publicly disclosed data breaches in the US in 2023 — nearly 9 per day. Cambridge Analytica 87M users, Equifax 147M, Facebook 500M, T-Mobile 100M — these aren\'t "accidents," they\'re systemic. Because data has value, it gets collected. Because it\'s stored centrally, it can leak. Because it can leak, it will leak. Privacy isn\'t "under threat" — it\'s already gone. The only way out isn\'t a stronger lock — it\'s making the lock meaningless: making data inherently unidentifiable. Like pouring a cup of water into the ocean — the water is still there, but it cannot be "found."',
+'badge-breaches':'annual data breaches (global)','badge-tos':'workdays to read all policies','badge-ca':'Cambridge Analytica affected (M)',
+'why-c-title':'Blockchain Is Moving Beyond Finance — Into All of Life',
+'why-c-desc':'BTC (2009) — for the first time, value exists natively on-chain, needing zero central authority. Ethereum (2015) — contracts execute automatically, law and code begin merging. NFTs (2021) — digital ownership without a registry. DePIN — decentralized physical infrastructure: wireless (Helium), energy, mapping (Hivemapper), compute, all moving on-chain. DeSci — research funding and peer review being decentralized. RWA — real estate, bonds, commodities being tokenized, projected $16 trillion market by 2030. The evolution path is not speculation: currency→finance→assets→identity→social→all of life. Every step is already happening. This framework simply follows the curve to its conclusion.',
+'badge-btc':'BTC peak market cap ($T)','badge-defi':'DeFi TVL ($B)','badge-rwa':'RWA 2030 projection ($T)',
+'s04-quote':'Three trends exist independently. Centralization never stopped — every ChatGPT query you type is proof. Privacy is already dead — every "I agree" you click is its epitaph. Blockchain is consuming the world — from currency to identity to all of life. What\'s missing is a framework that connects them. That\'s what this framework is for.',
+'s05-label':'05 · Implications',
+'s05-title':'If This Framework Holds,<br>It Resets More Than the Internet',
+'s05-lead':'<p>Three dimensions, three projections. This isn\'t "tech prediction" — it\'s logical extension from existing trends.</p>',
+'imp-econ-title':'Economic: Token Is the Only Currency',
+'imp-econ-body':'When information=Token=value, Token is not "another currency" — it is the only currency. Because it is fully equivalent to information, and information is the total product of human activity. Any currency not directly generated from information — fiat, gold, stocks — loses its logical foundation in this framework. Currency ceases to be "a value symbol backed by state credit" and becomes "the native unit of measurement for human activity." Like the meter is the unit of length in physics — not "the meter represents length," but length itself is measured in meters. Token is to value what the meter is to length.',
+'imp-social-title':'Social: Your Value Is No Longer Determined by Salary',
+'imp-social-body':'Today, a person\'s "social value" is crudely approximated by salary, title, social status — and these approximations are indirect and easily manipulated. Token balance changes everything. Not because you "earned" these tokens, but because these tokens ARE you — every meaningful interaction you have generates weighted information, which IS token. You don\'t need to "find a job to prove your worth." You just need to live, create, and interact. This is the shift from "wage labor" to "existence itself."',
+'imp-tech-title':'Technical: Two Things Don\'t Exist Yet',
+'imp-tech-body':'This requires a chain capable of carrying all of humanity\'s information — billions of people, trillions of on-chain events per second. Low latency, high throughput, censorship-resistant, permissionless. And an Agent that can understand everything, represent everything, and execute everything — not today\'s ChatGPT, but a single proxy that manages your entire digital life. Neither exists today. But they are the logical endpoints of the information layer and the work layer respectively. They are not "things someone will build" — they are "things that must exist," because the curve points there.',
+'s06-label':'06 · Current Stage',
+'stage-head':'<strong style="color:var(--text);">Early-Stage Exploration</strong>',
+'stage-body':'It\'s not a finished product. It\'s a seed.<br>Many questions remain unanswered — that\'s the most exciting part.<br>If something feels wrong, or you have a better approach — tell me.<br>Good ideas grow through debate and iteration.',
+'s07-label':'07 · Keywords',
+'s08-label':'08 · Paper',
+'s08-title':'Living Document, Continuously Growing',
+'s08-desc':'An evolving framework document. From idea to action.',
+'paper-btn':'Read the Full Framework →',
+'footer':'A growing idea · 2026'
+}};
+
+let currentLang='zh';
+function switchLang(lang){
+  currentLang=lang;
+  document.querySelectorAll('.nav-lang button').forEach(b=>{
+    b.classList.toggle('active',b.textContent.trim()===(lang==='zh'?'中文':'English'));
+  });
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(T[lang]&&T[lang][k]) el.textContent=T[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-html');
+    if(T[lang]&&T[lang][k]) el.innerHTML=T[lang][k];
+  });
+  buildHeroText(lang);
+  updateMagnetChars();
+}
+
+// ====== BUILD HERO TEXT (chars wrapped for magnet fx) ======
+function buildHeroText(lang){
+  const titleEl=document.getElementById('hero-title');
+  const raw=T[lang]['hero-title'];
+  const parts=raw.split('<br>');
+  titleEl.innerHTML='';
+  parts.forEach((part,i)=>{
+    const lineSpan=document.createElement('span');
+    lineSpan.style.display='block';
+    const isGrad=(i===1);
+    if(isGrad)lineSpan.className='grad';
+    for(const ch of part){
+      const span=document.createElement('span');
+      span.className='mchar';
+      span.textContent=ch;
+      span.setAttribute('data-char',ch);
+      lineSpan.appendChild(span);
+    }
+    titleEl.appendChild(lineSpan);
+    if(i<parts.length-1){const br=document.createElement('br');titleEl.appendChild(br);}
+  });
+
+  const subEl=document.getElementById('hero-sub');
+  const subRaw=T[lang]['hero-sub'];
+  subEl.innerHTML='';
+  const tmp=document.createElement('div');
+  tmp.innerHTML=subRaw;
+  function wrapWords(node){
+    if(node.nodeType===3){
+      const words=node.textContent.split(/(\s+)/);
+      const frag=document.createDocumentFragment();
+      words.forEach(w=>{
+        if(w.trim()){
+          const sp=document.createElement('span');
+          sp.className='hword';sp.textContent=w;frag.appendChild(sp);
+        }else{frag.appendChild(document.createTextNode(w));}
+      });
+      return frag;
+    }
+    const frag=document.createDocumentFragment();
+    Array.from(node.childNodes).forEach(child=>{
+      if(child.nodeType===1&&child.tagName==='EM'){
+        const em=document.createElement('em');
+        em.style.fontStyle='normal';em.style.color='var(--text2)';em.style.fontWeight='600';
+        Array.from(child.childNodes).forEach(c=>em.appendChild(wrapWords(c)));
+        frag.appendChild(em);
+      }else if(child.nodeType===1&&child.tagName==='BR'){
+        frag.appendChild(document.createElement('br'));
+      }else{frag.appendChild(wrapWords(child));}
+    });
+    return frag;
+  }
+  subEl.appendChild(wrapWords(tmp));
+}
+
+let magnetChars=[];
+function updateMagnetChars(){
+  magnetChars=Array.from(document.querySelectorAll('#hero-title .mchar'));
+}
+</script>
+
+<!-- ====== MAIN JS: LENIS + GSAP + THREE.JS ====== -->
+<script>
+(function(){
+  // ====== LENIS ======
+  const lenis=new Lenis({duration:1.2,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
+  function raf(t){lenis.raf(t);requestAnimationFrame(raf);}
+  requestAnimationFrame(raf);
+  lenis.on('scroll',ScrollTrigger.update);
+  gsap.ticker.add(t=>{lenis.raf(t*1000);});
+  gsap.ticker.lagSmoothing(0);
+
+  // ====== PROGRESS ======
+  gsap.to('#progress',{scaleX:1,ease:'none',
+    scrollTrigger:{trigger:'body',start:'top top',end:'bottom bottom',scrub:0.3}});
+
+  // ====== GLOW ORBS FOLLOW MOUSE ======
+  const orbs=document.querySelectorAll('.glow-orb');
+  document.addEventListener('mousemove',e=>{
+    const x=(e.clientX/window.innerWidth-0.5)*24;
+    const y=(e.clientY/window.innerHeight-0.5)*24;
+    orbs.forEach((o,i)=>{const s=1+i*0.35;o.style.transform=`translate(${x*s}px,${y*s}px)`;});
+    // Magnet chars
+    const mx=e.clientX,my=e.clientY;
+    magnetChars.forEach(ch=>{
+      const rect=ch.getBoundingClientRect();
+      const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+      const dx=mx-cx,dy=my-cy;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      const maxD=120;
+      if(dist<maxD){
+        const f=(1-dist/maxD);
+        ch.style.transform=`translate(${(dx/dist)*f*10}px,${(dy/dist)*f*10}px) scale(${1+f*0.3})`;
+        if(ch.closest('.grad')){
+          ch.style.textShadow=`0 0 ${f*40}px rgba(240,160,64,${f*0.7}),0 0 ${f*60}px rgba(64,224,192,${f*0.4})`;
+        }else{
+          ch.style.textShadow=`0 0 ${f*30}px rgba(255,255,255,${f*0.5})`;
+        }
+        ch.style.color='#fff';
+        ch.style.webkitTextFillColor='#fff';
+      }else{
+        ch.style.transform='translate(0,0) scale(1)';
+        ch.style.color='';ch.style.webkitTextFillColor='';ch.style.textShadow='';
+      }
+    });
+  });
+
+  // ====== HERO ANIMS ======
+  buildHeroText('zh');
+  updateMagnetChars();
+  const heroTl=gsap.timeline({defaults:{ease:'power3.out'}});
+  heroTl.to('.hero .eyebrow',{opacity:1,y:0,duration:1})
+    .to('.hero h1',{opacity:1,y:0,duration:1.2},'-=0.6')
+    .to('.hero .sub',{opacity:1,y:0,duration:1},'-=0.4')
+    .to('.scroll-tag',{opacity:1,duration:0.8},'-=0.3');
+
+  // HERO PARALLAX
+  gsap.to('.hero-bg',{y:120,ease:'none',
+    scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
+
+  // ====== SECTION HEADINGS ======
+  const secs=['#s01','#s02','#s03','#s04','#s05','#s06','#s07','#s08'];
+  secs.forEach(id=>{
+    const sec=document.querySelector(id);
+    if(!sec)return;
+    const h2=sec.querySelector('h2');
+    const num=sec.querySelector('.sec-num');
+    const lead=sec.querySelector('.lead');
+    if(h2)gsap.from(h2,{y:60,opacity:0,duration:1.1,ease:'power3.out',
+      scrollTrigger:{trigger:h2,start:'top 88%',toggleActions:'play none none none'}});
+    if(num)gsap.from(num,{y:30,opacity:0,duration:0.8,ease:'power3.out',
+      scrollTrigger:{trigger:num,start:'top 90%',toggleActions:'play none none none'}});
+    if(lead)gsap.from(lead,{y:40,opacity:0,duration:1,delay:0.1,ease:'power3.out',
+      scrollTrigger:{trigger:lead,start:'top 88%',toggleActions:'play none none none'}});
+  });
+
+  // ====== CARD STAGGERS ======
+  gsap.from('#card-inward',{x:-80,opacity:0,duration:1.2,ease:'power3.out',
+    scrollTrigger:{trigger:'#card-inward',start:'top 82%',toggleActions:'play none none none'}});
+  gsap.from('#card-outward',{x:80,opacity:0,duration:1.2,ease:'power3.out',
+    scrollTrigger:{trigger:'#card-outward',start:'top 82%',toggleActions:'play none none none'}});
+
+  gsap.from('#diagram-box',{scale:0.95,opacity:0,duration:1.2,ease:'power3.out',
+    scrollTrigger:{trigger:'#diagram-box',start:'top 82%',toggleActions:'play none none none'}});
+
+  gsap.from('#axiom-block',{scale:0.92,opacity:0,duration:1.3,ease:'power3.out',
+    scrollTrigger:{trigger:'#axiom-block',start:'top 85%',toggleActions:'play none none none'}});
+
+  gsap.from('#impl-cards .card',{y:60,opacity:0,duration:0.9,stagger:0.15,ease:'power3.out',
+    scrollTrigger:{trigger:'#impl-cards',start:'top 82%',toggleActions:'play none none none'}});
+
+  ['#trend-a','#trend-b','#trend-c'].forEach((id,i)=>{
+    gsap.from(id,{x:i%2===0?-80:80,opacity:0,duration:1,ease:'power3.out',
+      scrollTrigger:{trigger:id,start:'top 82%',toggleActions:'play none none none'}});
+  });
+
+  gsap.from('#imp-cards .card',{y:60,opacity:0,duration:0.9,stagger:0.15,ease:'power3.out',
+    scrollTrigger:{trigger:'#imp-cards',start:'top 82%',toggleActions:'play none none none'}});
+
+  gsap.from('#stage-block',{scale:0.92,opacity:0,duration:1.2,ease:'power3.out',
+    scrollTrigger:{trigger:'#stage-block',start:'top 85%',toggleActions:'play none none none'}});
+
+  gsap.from('#kw-cloud .kw',{y:30,opacity:0,duration:0.6,stagger:0.04,ease:'power3.out',
+    scrollTrigger:{trigger:'#kw-cloud',start:'top 88%',toggleActions:'play none none none'}});
+
+  // ====== COUNTERS (fixed: animate object prop, render to DOM) ======
+  document.querySelectorAll('[data-to]').forEach(el=>{
+    const to=parseFloat(el.getAttribute('data-to'));
+    const obj={val:0};
+    gsap.to(obj,{val:to,duration:2.5,ease:'power2.out',
+      scrollTrigger:{trigger:el,start:'top 92%',toggleActions:'play none none none'},
+      onUpdate:()=>{
+        el.textContent=to>=10?Math.round(obj.val):obj.val.toFixed(1);
+      }
+    });
+  });
+
+  // ====== WEIGHT BARS ======
+  document.querySelectorAll('.bar[data-width]').forEach(bar=>{
+    const w=parseFloat(bar.getAttribute('data-width'));
+    bar.style.width='0px';
+    gsap.to(bar,{width:w,duration:1.8,ease:'power3.out',
+      scrollTrigger:{trigger:bar,start:'top 90%',toggleActions:'play none none none'}});
+  });
+
+  // ====== CARD TILT ======
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+      card.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+    });
+  });
+
+  // ====== NAV SHADOW ======
+  ScrollTrigger.create({trigger:'body',start:'top -60',
+    onEnter:()=>document.getElementById('nav').style.boxShadow='0 1px 0 rgba(255,255,255,0.06)',
+    onLeaveBack:()=>document.getElementById('nav').style.boxShadow='none'});
+})();
+</script>
+
+<!-- ====== THREE.JS HERO 3D PARTICLES ====== -->
+<script>
+(function(){
+  if(typeof THREE==='undefined'){setTimeout(arguments.callee,200);return;}
+  const canvas=document.getElementById('hero-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,1,0.1,1000);
+  camera.position.z=35;
+
+  // Glow texture
+  const tc=document.createElement('canvas');tc.width=64;tc.height=64;
+  const tctx=tc.getContext('2d');
+  const g=tctx.createRadialGradient(32,32,0,32,32,32);
+  g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(0.06,'rgba(255,255,255,0.85)');
+  g.addColorStop(0.3,'rgba(255,255,255,0.25)');g.addColorStop(1,'rgba(0,0,0,0)');
+  tctx.fillStyle=g;tctx.fillRect(0,0,64,64);
+  const tex=new THREE.CanvasTexture(tc);
+
+  const COUNT=2000;
+  const pos=new Float32Array(COUNT*3);
+  const col=new Float32Array(COUNT*3);
+  const siz=new Float32Array(COUNT);
+  const vel=new Float32Array(COUNT*3);
+
+  const palette=[
+    new THREE.Color('#f0a040'),new THREE.Color('#e89440'),new THREE.Color('#f0c060'),
+    new THREE.Color('#40e0c0'),new THREE.Color('#3dd6c0'),new THREE.Color('#60f0d8'),
+    new THREE.Color('#b48cf0'),new THREE.Color('#f06080'),new THREE.Color('#ffffff'),
+  ];
+
+  const W=45,H=32,D=22;
+  for(let i=0;i<COUNT;i++){
+    pos[i*3]=(Math.random()-0.5)*W;
+    pos[i*3+1]=(Math.random()-0.5)*H;
+    pos[i*3+2]=(Math.random()-0.5)*D;
+    const c=palette[Math.floor(Math.random()*palette.length)];
+    col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;
+    siz[i]=Math.random()*0.35+0.05;
+    vel[i*3]=(Math.random()-0.5)*0.008;
+    vel[i*3+1]=(Math.random()-0.5)*0.008;
+    vel[i*3+2]=(Math.random()-0.5)*0.004;
+  }
+
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  geo.setAttribute('size',new THREE.BufferAttribute(siz,1));
+
+  const mat=new THREE.PointsMaterial({size:0.28,map:tex,vertexColors:true,
+    blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.88});
+  const pts=new THREE.Points(geo,mat);
+  scene.add(pts);
+
+  let mx=0,my=0,tmx=0,tmy=0;
+
+  function resize(){
+    const w=window.innerWidth,h=window.innerHeight;
+    renderer.setSize(w,h);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();
+  }
+  resize();window.addEventListener('resize',resize);
+
+  const hero=document.getElementById('hero');
+  hero.addEventListener('mousemove',e=>{tmx=(e.clientX/window.innerWidth)*2-1;tmy=-(e.clientY/window.innerHeight)*2+1;});
+  hero.addEventListener('mouseleave',()=>{tmx=0;tmy=0;});
+
+  function animate(t){
+    requestAnimationFrame(animate);
+    mx+=(tmx-mx)*0.04;my+=(tmy-my)*0.04;
+
+    for(let i=0;i<COUNT;i++){
+      pos[i*3]+=vel[i*3]+Math.sin(t*0.0003+i)*0.004;
+      pos[i*3+1]+=vel[i*3+1]+Math.cos(t*0.0005+i*0.5)*0.004;
+      pos[i*3+2]+=vel[i*3+2];
+      if(Math.abs(pos[i*3])>W/2)pos[i*3]*=-0.99;
+      if(Math.abs(pos[i*3+1])>H/2)pos[i*3+1]*=-0.99;
+      if(Math.abs(pos[i*3+2])>D/2)pos[i*3+2]*=-0.99;
+      siz[i]=(Math.random()*0.35+0.05)*(0.75+0.25*Math.sin(t*0.002+i*0.1));
+    }
+    geo.attributes.position.needsUpdate=true;
+    geo.attributes.size.needsUpdate=true;
+
+    camera.position.x+=(mx*10-camera.position.x)*0.03;
+    camera.position.y+=(my*6-camera.position.y)*0.03;
+    camera.position.z+=(35-camera.position.z)*0.03;
+    camera.lookAt(Math.sin(t*0.00012)*2,Math.cos(t*0.0002)*1.5,0);
+    pts.rotation.y+=0.0001;
+
+    renderer.render(scene,camera);
+  }
+  requestAnimationFrame(animate);
+})();
+</script>
+
+<!-- ====== DIAGRAM CANVAS ====== -->
+<script>
+(function(){
+  const canvas=document.getElementById('diagram-canvas'),ctx=canvas.getContext('2d');
+  let W,H,cx,cy,parts;
+  const IC='240,160,64',OC='64,224,192';
+
+  function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight;cx=W/2;cy=H/2;}
+  function spIn(){
+    const a=Math.random()*Math.PI*2,d=Math.random()*0.7+0.3;
+    return{t:'in',x:cx+Math.cos(a)*(W*d),y:cy+Math.sin(a)*(H*d),tx:cx,ty:cy,
+            p:Math.random(),s:Math.random()*0.003+0.0015,r:Math.random()*2.2+0.5,trail:[]};
+  }
+  function spOut(){
+    return{t:'out',x:cx,y:cy,ang:Math.random()*Math.PI*2,dist:0,
+            s:Math.random()*0.004+0.002,r:Math.random()*2.2+0.5,trail:[]};
+  }
+  function reset(){parts=[];for(let i=0;i<180;i++)parts.push(spIn());for(let i=0;i<180;i++)parts.push(spOut());}
+  resize();reset();
+
+  function draw(time){
+    ctx.clearRect(0,0,W,H);
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,85);
+    g.addColorStop(0,'rgba(255,255,255,0.08)');g.addColorStop(0.3,'rgba(240,160,64,0.05)');
+    g.addColorStop(0.7,'rgba(64,224,192,0.04)');g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();ctx.arc(cx,cy,85,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+
+    [{r:55,s:0.0004,ti:0.12,a:0.12},{r:110,s:-0.00025,ti:-0.08,a:0.07},{r:180,s:0.00018,ti:0.15,a:0.05},{r:260,s:-0.00012,ti:-0.07,a:0.03}].forEach(r=>{
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(time*r.s);ctx.scale(1,1-r.ti);
+      ctx.beginPath();ctx.arc(0,0,r.r,0,Math.PI*2);ctx.strokeStyle=`rgba(255,255,255,${r.a})`;ctx.lineWidth=0.5;ctx.stroke();
+      ctx.restore();
+    });
+
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.8)';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,13,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;ctx.stroke();
+
+    parts.forEach(p=>{
+      p.p+=p.s;const alpha=Math.sin(p.p*Math.PI)*0.75;
+      if(p.t==='in'){
+        const px=p.tx+(p.x-p.tx)*(1-p.p),py=p.ty+(p.y-p.ty)*(1-p.p);
+        p.trail.push({x:px,y:py,life:1});if(p.trail.length>18)p.trail.shift();
+        p.trail.forEach(t=>t.life-=0.055);
+        p.trail.forEach(t=>{if(t.life>0){ctx.beginPath();ctx.arc(t.x,t.y,p.r*0.35,0,Math.PI*2);ctx.fillStyle=`rgba(${IC},${t.life*0.45})`;ctx.fill();}});
+        ctx.beginPath();ctx.arc(px,py,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${IC},${alpha})`;ctx.fill();
+        if(p.p>=1)Object.assign(p,spIn());
+      }else{
+        p.dist+=p.s*(W*0.55);const px=cx+Math.cos(p.ang)*p.dist,py=cy+Math.sin(p.ang)*p.dist;
+        p.trail.push({x:px,y:py,life:1});if(p.trail.length>18)p.trail.shift();
+        p.trail.forEach(t=>t.life-=0.055);
+        p.trail.forEach(t=>{if(t.life>0){ctx.beginPath();ctx.arc(t.x,t.y,p.r*0.35,0,Math.PI*2);ctx.fillStyle=`rgba(${OC},${t.life*0.45})`;ctx.fill();}});
+        const a=1-p.dist/(W*0.55);
+        ctx.beginPath();ctx.arc(px,py,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${OC},${Math.max(0,a*0.75)})`;ctx.fill();
+        if(p.dist>W*0.55)Object.assign(p,spOut());
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+  window.addEventListener('resize',()=>{resize();reset();});
+})();
+</script>
+
+</body>
+</html>
